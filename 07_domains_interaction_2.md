@@ -1,22 +1,40 @@
+# Карта взаимодействия доменов (Context Map)
+
+## Mermaid-диаграмма с типами вызовов
+
 ```mermaid
 graph TD
-    Identity[Identity & Access] -->|user_id JWT| Betting
-    Identity -->|user_id JWT| UserProfile[User Profile]
+    %% Легенда типов линий
+    subgraph Legend["Легенда"]
+        direction LR
+        L1[Синхронный вызов] -->|REST/gRPC| L2[Немедленный ответ]
+        L3[Асинхронное событие] -.->|Kafka/Queue| L4[Фоновая обработка]
+    end
     
-    Market -->|MarketResolved| Resolution
-    Market <-->|Sync: статус рынка| Betting
+    %% Основные домены
+    Identity[Identity & Access]
+    Market[Market]
+    Betting[Betting]
+    Wallet[Wallet & Ledger]
+    Resolution[Resolution]
+    UserProfile[User Profile]
+    Monetization[Monetization]
     
-    Betting -->|BetPlaced| Wallet[Wallet & Ledger]
-    Betting <-->|Sync: баланс| Wallet
+    %% Синхронные вызовы (сплошные стрелки)
+    Identity -->|JWT валидация| Betting
+    Identity -->|создание профиля| UserProfile
+    Betting -->|проверка баланса| Wallet
+    Betting -->|статус рынка| Market
     
-    Resolution -->|PayoutProcessed| Wallet
-    Resolution -->|обновление статистики| UserProfile
-    
-    Wallet -->|BalanceChanged| UserProfile
-    
-    Monetization -->|AdFreeActivated| Wallet
+    %% Асинхронные события (пунктирные стрелки)
+    Market -.->|MarketResolved| Resolution
+    Betting -.->|BetPlaced| Wallet
+    Resolution -.->|PayoutProcessed| Wallet
+    Wallet -.->|BalanceChanged| UserProfile
+    Monetization -.->|AdFreeActivated| Wallet
     Monetization -.->|обновление флага| UserProfile
     
+    %% Стили
     style Identity fill:#e1f5ff
     style Market fill:#fff4e1
     style Betting fill:#ffe1e1
@@ -24,3 +42,4 @@ graph TD
     style Resolution fill:#f0e1ff
     style UserProfile fill:#ffe1f0
     style Monetization fill:#ffffe1
+    style Legend fill:#f5f5f5,stroke:#ccc
