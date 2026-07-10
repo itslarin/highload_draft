@@ -43,3 +43,29 @@ graph TD
     style UserProfile fill:#ffe1f0
     style Monetization fill:#ffffe1
     style Legend fill:#f5f5f5,stroke:#ccc
+```
+
+
+## Типы линий в диаграмме
+
+### Синхронные вызовы (сплошная стрелка `-->`)
+Используются для операций, требующих немедленного ответа.
+
+* **Identity → Betting:** Валидация JWT при каждом запросе
+* **Identity → UserProfile:** Создание профиля при регистрации
+* **Betting → Wallet:** Проверка баланса перед размещением ставки
+* **Betting → Market:** Валидация статуса рынка (OPEN/CLOSED)
+
+**Технологии:** REST API, gRPC
+
+### Асинхронные события (пунктирная стрелка `-.->`)
+Используются для ослабления связности и масштабирования.
+
+* **Market → Resolution:** Событие `MarketResolved` (рынок закрыт, известен результат)
+* **Betting → Wallet:** Событие `BetPlaced` (ставка размещена, нужно списать средства)
+* **Resolution → Wallet:** Событие `PayoutProcessed` (выплаты рассчитаны, нужно начислить)
+* **Wallet → UserProfile:** Событие `BalanceChanged` (баланс изменился, обновить статистику)
+* **Monetization → Wallet:** Событие `AdFreeActivated` (куплена подписка, нужно сжечь валюту)
+* **Monetization → UserProfile:** Обновление флага `ad_free`
+
+**Технологии:** Apache Kafka, RabbitMQ, Redis Pub/Sub
